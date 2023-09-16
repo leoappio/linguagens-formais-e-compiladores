@@ -11,6 +11,50 @@ class AutomatoFinito():
         self.alfabeto = alfabeto
 
     
+    def minimizar(self):
+        self.remover_estados_inalcancaveis()
+        self.remover_estados_equivalentes()
+        self.remover_estados_mortos()
+        
+
+    def remover_estados_inalcancaveis(self):
+        estados_processados = []
+        estados_para_processar = [self.estado_inicial]
+
+        while estados_para_processar:
+            estado_processando = estados_para_processar.pop()
+            estados_processados.append(estado_processando)
+            for transicao in estado_processando.transicoes:
+                    if transicao.estado_destino not in estados_para_processar and transicao.estado_destino not in estados_processados:
+                        estados_para_processar.append(transicao.estado_destino)
+        
+        self.estados = estados_processados
+
+
+    def remover_estados_mortos(self):
+        estados_vivos = set(self.estados_finais)
+        novos_estados_vivos = set(self.estados_finais)
+
+        while novos_estados_vivos:
+            estados_vivos_atual = novos_estados_vivos
+            novos_estados_vivos = set()
+
+            for estado in self.estados:
+                for transicao in estado.transicoes:
+                    if transicao.estado_destino in estados_vivos_atual:
+                        novos_estados_vivos.add(estado)
+            
+            novos_estados_vivos -= estados_vivos
+            estados_vivos.update(novos_estados_vivos)
+
+        self.estados = [estado for estado in self.estados if estado in estados_vivos]
+
+    
+
+    def remover_estados_equivalentes(self):
+        ...
+
+
     def determinizar(self):
         if self.tem_transicao_epsilon():
             self.__determinizar_com_fecho()
