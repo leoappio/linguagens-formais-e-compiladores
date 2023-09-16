@@ -52,6 +52,16 @@ class AutomatoFinito():
 
         self.unir_transicoes()
         self.atualizar_finais()
+
+        for estado in novos_estados:
+            print('----------------------------------------')
+            print(estado.nome)
+            for transicao in estado.transicoes:
+                print(f'    {transicao.estado_origem.nome} -{transicao.simbolo_alfabeto}-> {transicao.estado_destino.nome}')
+
+        for estado in self.estados_finais:
+            print('--------------Finais--------------------')
+            print(estado.nome)
     
 
     def __existe_estado_com_o_mesmo_nome(self,novos_estados, nome):
