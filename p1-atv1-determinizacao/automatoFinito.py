@@ -13,47 +13,40 @@ class AutomatoFinito():
     
     def minimizar(self):
         self.remover_estados_inalcancaveis()
-        self.remover_estados_equivalentes()
         self.remover_estados_mortos()
+        self.remover_estados_equivalentes()
         
 
     def remover_estados_inalcancaveis(self):
-        estados_processados = []
+        estados_alcancaveis = []
         estados_para_processar = [self.estado_inicial]
 
         while estados_para_processar:
             estado_processando = estados_para_processar.pop()
-            estados_processados.append(estado_processando)
+            estados_alcancaveis.append(estado_processando)
             for transicao in estado_processando.transicoes:
-                    if transicao.estado_destino not in estados_para_processar and transicao.estado_destino not in estados_processados:
+                    if transicao.estado_destino not in estados_para_processar and transicao.estado_destino not in estados_alcancaveis:
                         estados_para_processar.append(transicao.estado_destino)
         
-        self.estados = estados_processados
+        self.estados = estados_alcancaveis
 
 
     def remover_estados_mortos(self):
-        estados_vivos = set(self.estados_finais)
-        novos_estados_vivos = set(self.estados_finais)
+        estados_vivos = []
+        for estado in self.estados:
+            for simbolo in self.alfabeto:
+                caminho = estado.get_caminho_por_simbolo(simbolo)
+                for estado_final in self.estados_finais:
+                    if estado_final.nome in caminho:
+                        if estado not in estados_vivos:
+                            estados_vivos.append(estado)
+                        
 
-        while novos_estados_vivos:
-            estados_vivos_atual = novos_estados_vivos
-            novos_estados_vivos = set()
-
-            for estado in self.estados:
-                for transicao in estado.transicoes:
-                    if transicao.estado_destino in estados_vivos_atual:
-                        novos_estados_vivos.add(estado)
-            
-            novos_estados_vivos -= estados_vivos
-            estados_vivos.update(novos_estados_vivos)
-
-        self.estados = [estado for estado in self.estados if estado in estados_vivos]
-
+        self.estados = estados_vivos
     
 
     def remover_estados_equivalentes(self):
         ...
-
 
     def determinizar(self):
         if self.tem_transicao_epsilon():
@@ -241,9 +234,9 @@ class AutomatoFinito():
     def imprimir_resultado(self):
         resultado = str(len(self.estados)) + ";"
         
-        resultado += "{" + self.estado_inicial.nome + "};"
+        resultado += self.estado_inicial.nome + ";"
         
-        estados_finais_formatados = ["{" + estado.nome + "}" for estado in sorted(self.estados_finais, key=lambda x: (-len(x.nome), x.nome))]
+        estados_finais_formatados = ["" + estado.nome + "" for estado in sorted(self.estados_finais, key=lambda x: (-len(x.nome), x.nome))]
         resultado += "{" + ",".join(estados_finais_formatados) + "};"
         
         resultado += "{" + ",".join(sorted(self.alfabeto)) + "};"
@@ -251,9 +244,9 @@ class AutomatoFinito():
         transicoes_formatadas = []
         for estado in sorted(self.estados, key=lambda x: x.nome):
             for transicao in sorted(estado.transicoes, key=lambda x: (x.estado_origem.nome, x.simbolo_alfabeto)):
-                transicoes_formatadas.append("{" + transicao.estado_origem.nome + "}," + 
+                transicoes_formatadas.append(transicao.estado_origem.nome + "," + 
                                             transicao.simbolo_alfabeto + "," + 
-                                            "{" + transicao.estado_destino.nome + "}")
+                                            transicao.estado_destino.nome)
         resultado += ";".join(transicoes_formatadas)
         
         print(resultado)

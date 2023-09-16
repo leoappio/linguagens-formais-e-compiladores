@@ -41,3 +41,20 @@ class Estado():
 
         nome_sigma_fecho = ''.join(sorted(set(nome_sigma_fecho)))
         self.sigma_fecho = nome_sigma_fecho
+
+
+    def get_caminho_por_simbolo(self, simbolo):
+        estados_para_calcular = [self]
+        estados_ja_calculados = ''
+        caminho = []
+
+        while estados_para_calcular:
+            estado_calculando = estados_para_calcular.pop()
+            estados_ja_calculados += estado_calculando.nome
+            for transicao in estado_calculando.get_transicoes_por_simbolo(simbolo):
+                if transicao.estado_destino.nome not in estados_ja_calculados:
+                    caminho.append(transicao.estado_destino.nome)
+                    estados_para_calcular.append(transicao.estado_destino)
+
+        return caminho
+
