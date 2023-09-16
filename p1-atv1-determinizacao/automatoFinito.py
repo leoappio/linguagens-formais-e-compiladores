@@ -19,7 +19,42 @@ class AutomatoFinito():
 
 
     def __determinizar_com_fecho(self):
-        pass
+        for estado in self.estados:
+            estado.calcular_sigma_fecho()    
+
+        novos_estados = []
+        estados_a_calcular = [self.estado_inicial.sigma_fecho]
+
+        while estados_a_calcular:
+            estado_atual = estados_a_calcular.pop()
+            if not self.__existe_estado_com_o_mesmo_nome(novos_estados, estado_atual):
+                novo_estado = Estado(estado_atual)
+                for simbolo in self.alfabeto:
+                    if simbolo != '&':
+                        estado_destino_nome = ''
+                        for estado in estado_atual:
+                            estado_obj = next((e for e in self.estados if e.nome == estado), None)
+                            transicoes = estado_obj.get_transicoes_por_simbolo(simbolo)
+                            for transicao in transicoes:
+                                fecho = transicao.estado_destino.sigma_fecho
+                                for estado_fecho in fecho:
+                                    estado_fecho_obj = next((e for e in self.estados if e.nome == estado_fecho), None)
+                                    novo_estado.add_transicao(Transicao(novo_estado, simbolo, estado_fecho_obj))
+                                    estado_destino_nome += estado_fecho_obj.nome
+                        
+                            estado_destino_nome = ''.join(sorted(set(estado_destino_nome)))
+                            
+                            estados_a_calcular.append(estado_destino_nome)
+
+                if novo_estado.nome != '':
+                    novos_estados.append(novo_estado)
+            
+        self.estados = novos_estados
+
+        self.unir_transicoes()
+        self.atualizar_finais()
+        self.atualizar_estado_inicial()
+        self.atualizar_alfabeto()
 
 
     def __determinizar_sem_fecho(self):
@@ -53,16 +88,6 @@ class AutomatoFinito():
         self.unir_transicoes()
         self.atualizar_finais()
 
-        for estado in novos_estados:
-            print('----------------------------------------')
-            print(estado.nome)
-            for transicao in estado.transicoes:
-                print(f'    {transicao.estado_origem.nome} -{transicao.simbolo_alfabeto}-> {transicao.estado_destino.nome}')
-
-        for estado in self.estados_finais:
-            print('--------------Finais--------------------')
-            print(estado.nome)
-    
 
     def __existe_estado_com_o_mesmo_nome(self,novos_estados, nome):
         for estado in novos_estados:
@@ -75,19 +100,21 @@ class AutomatoFinito():
     def unir_transicoes(self):
         for estado in self.estados:
             for simbolo in self.alfabeto:
-                nome_novo_estado = ""
-                outras_transicoes = []
-                for transicao in estado.transicoes:
-                    if transicao.simbolo_alfabeto == simbolo:
-                        nome_novo_estado += transicao.estado_destino.nome
-                    else:
-                        outras_transicoes.append(transicao)
+                if simbolo != '&':
+                    nome_novo_estado = ""
+                    outras_transicoes = []
+                    for transicao in estado.transicoes:
+                        if transicao.simbolo_alfabeto == simbolo:
+                            nome_novo_estado += transicao.estado_destino.nome
+                        else:
+                            outras_transicoes.append(transicao)
 
-                nome_novo_estado = ''.join(sorted(set(nome_novo_estado)))
-                estado_destino_obj = next((e for e in self.estados if e.nome == nome_novo_estado), None)
-                outras_transicoes.append(Transicao(estado, simbolo, estado_destino_obj))
-
-                estado.transicoes = outras_transicoes
+                    if nome_novo_estado != '':
+                        nome_novo_estado = ''.join(sorted(set(nome_novo_estado)))
+                        estado_destino_obj = next((e for e in self.estados if e.nome == nome_novo_estado), None)
+                        outras_transicoes.append(Transicao(estado, simbolo, estado_destino_obj))
+                    
+                        estado.transicoes = outras_transicoes
 
 
     def atualizar_finais(self):
@@ -98,6 +125,15 @@ class AutomatoFinito():
                     novos_finais.append(estado)
         
         self.estados_finais = novos_finais
+    
+
+    def atualizar_estado_inicial(self):
+        nome_sigma_fecho = self.estado_inicial.sigma_fecho
+        estado_sigma_fecho_obj = next((e for e in self.estados if e.nome == nome_sigma_fecho), None)
+        self.estado_inicial = estado_sigma_fecho_obj
+
+    def atualizar_alfabeto(self):
+        self.alfabeto.remove('&')
 
 
     def tem_transicao_epsilon(self):
@@ -156,3 +192,28 @@ class AutomatoFinito():
 
         return estado_inicial, estados_finais, estados, alfabeto        
 
+    def imprimir_resultado(self):
+        resultado = str(len(self.estados)) + ";"
+        
+        # Estado inicial
+        resultado += "{" + self.estado_inicial.nome + "};"
+        
+        # Estados finais
+        estados_finais_formatados = ["{" + estado.nome + "}" for estado in self.estados_finais]
+        resultado += "{" + ",".join(estados_finais_formatados) + "};"
+        
+        # Alfabeto
+        resultado += "{" + ",".join(self.alfabeto) + "};"
+        
+        # Transições
+        transicoes_formatadas = []
+        for estado in self.estados:
+            for transicao in estado.transicoes:
+                transicoes_formatadas.append("{" + transicao.estado_origem.nome + "}," + 
+                                             transicao.simbolo_alfabeto + "," + 
+                                             "{" + transicao.estado_destino.nome + "}")
+        resultado += ";".join(transicoes_formatadas)
+        
+        print(resultado)
+
+        return resultado
