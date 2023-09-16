@@ -3,3 +3,4 @@ class Transicao():
         self.estado_origem = estado_origem
         self.simbolo_alfabeto = simbolo_alfabeto
         self.estado_destino = estado_destino
+        

@@ -132,6 +132,7 @@ class AutomatoFinito():
         estado_sigma_fecho_obj = next((e for e in self.estados if e.nome == nome_sigma_fecho), None)
         self.estado_inicial = estado_sigma_fecho_obj
 
+
     def atualizar_alfabeto(self):
         self.alfabeto.remove('&')
 
@@ -192,26 +193,23 @@ class AutomatoFinito():
 
         return estado_inicial, estados_finais, estados, alfabeto        
 
+
     def imprimir_resultado(self):
         resultado = str(len(self.estados)) + ";"
         
-        # Estado inicial
         resultado += "{" + self.estado_inicial.nome + "};"
         
-        # Estados finais
-        estados_finais_formatados = ["{" + estado.nome + "}" for estado in self.estados_finais]
+        estados_finais_formatados = ["{" + estado.nome + "}" for estado in sorted(self.estados_finais, key=lambda x: (-len(x.nome), x.nome))]
         resultado += "{" + ",".join(estados_finais_formatados) + "};"
         
-        # Alfabeto
-        resultado += "{" + ",".join(self.alfabeto) + "};"
+        resultado += "{" + ",".join(sorted(self.alfabeto)) + "};"
         
-        # Transições
         transicoes_formatadas = []
-        for estado in self.estados:
-            for transicao in estado.transicoes:
+        for estado in sorted(self.estados, key=lambda x: x.nome):
+            for transicao in sorted(estado.transicoes, key=lambda x: (x.estado_origem.nome, x.simbolo_alfabeto)):
                 transicoes_formatadas.append("{" + transicao.estado_origem.nome + "}," + 
-                                             transicao.simbolo_alfabeto + "," + 
-                                             "{" + transicao.estado_destino.nome + "}")
+                                            transicao.simbolo_alfabeto + "," + 
+                                            "{" + transicao.estado_destino.nome + "}")
         resultado += ";".join(transicoes_formatadas)
         
         print(resultado)
