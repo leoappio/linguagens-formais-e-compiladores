@@ -4,10 +4,12 @@ class ClasseEquivalencia():
 
     def adicionar_estado(self, estado):
         self.estados.append(estado)
+        self.ordenar_estados()
 
     def remover_estado(self, estado):
         if estado in self.estados:
             self.estados.remove(estado)
+            self.ordenar_estados()
 
     def contem_estado(self, estado):
         return estado in self.estados
@@ -21,3 +23,6 @@ class ClasseEquivalencia():
     def atualizar_referencias_nos_estados(self):
         for estado in self.estados:
             estado.classe_equivalencia = self
+
+    def ordenar_estados(self):
+        self.estados = sorted(self.estados, key=lambda estado: estado.nome)

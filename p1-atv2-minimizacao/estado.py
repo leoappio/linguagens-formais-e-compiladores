@@ -1,9 +1,11 @@
 from transicao import Transicao
 
+
 class Estado():
     def __init__(self, nome):
         self.nome = nome
         self.transicoes = []
+        self.classe_equivalencia = None
 
 
     def add_transicao(self, transicao_nova : Transicao):
@@ -40,3 +42,19 @@ class Estado():
 
         nome_sigma_fecho = ''.join(sorted(set(nome_sigma_fecho)))
         self.sigma_fecho = nome_sigma_fecho
+
+
+    def atinge_final_em_algum_caminho(self, nomes_finais):
+        estados_para_calcular = [self]
+        estados_ja_calculados = ''
+
+        while estados_para_calcular:
+            estado_calculando = estados_para_calcular.pop()
+            estados_ja_calculados += estado_calculando.nome
+            if estado_calculando.nome in nomes_finais:
+                return True
+            for transicao in estado_calculando.transicoes:
+                if transicao.estado_destino.nome not in estados_ja_calculados:
+                    estados_para_calcular.append(transicao.estado_destino)
+        
+        return False
