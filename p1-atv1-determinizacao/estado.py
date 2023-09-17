@@ -5,6 +5,7 @@ class Estado():
     def __init__(self, nome):
         self.nome = nome
         self.transicoes = []
+        self.classe_equivalencia = None
 
 
     def add_transicao(self, transicao_nova : Transicao):
@@ -15,6 +16,13 @@ class Estado():
 
         if transicao_nao_existe:
             self.transicoes.append(transicao_nova)
+
+
+    def proximo_estado(self, simbolo):
+        for transicao in self.transicoes:
+            if transicao.simbolo_alfabeto == simbolo:
+                return transicao.estado_destino
+        return None
 
     
     def get_transicoes_por_simbolo(self, simbolo):
